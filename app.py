@@ -23,7 +23,8 @@ TASKS = [
         "titre": "Faire du sport",
         "description": "Aller à la salle de sport ou faire une promenade",
         "done": False,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
     }
 ]
 
@@ -33,7 +34,20 @@ def home():
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    return jsonify({"count": len(TASKS), "data": TASKS})
+    done_param = request.args.get('done')
+
+    if done_param is None:
+        return jsonify({"count": len(TASKS), "data": TASKS})
+    
+    filtered_tasks = []
+
+    for task in TASKS:
+        if done_param == 'true' and task['done'] is True:
+            filtered_tasks.append(task)
+        elif done_param == 'false' and task['done'] is False:
+            filtered_tasks.append(task)
+
+    return jsonify({"count": len(filtered_tasks), "data": filtered_tasks})
 
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
@@ -54,7 +68,8 @@ def create_task():
         "titre": data.get("titre"),
         "description": data.get("description", ""), # Chaîne vide par défaut si absent
         "done": False,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
     }
     
     TASKS.append(task)
@@ -76,6 +91,7 @@ def update_task(task_id):
             task['titre'] = data.get('titre', task['titre'])
             task['description'] = data.get('description', task['description'])
             task['done'] = data.get('done', task['done'])
+            task['updated_at'] = datetime.now()
             return jsonify(task)
     return jsonify({"error": "Tâche non trouvée."}), 404
 
